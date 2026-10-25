@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.984 0.004 314.8);
+  --foreground: oklch(0.212 0.028 297.1);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.212 0.028 297.1);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.212 0.028 297.1);
+  --primary: oklch(0.772 0.164 71.0);
+  --primary-foreground: oklch(0.191 0.028 84.5);
+  --secondary: oklch(0.953 0.010 305.4);
+  --secondary-foreground: oklch(0.212 0.028 297.1);
+  --muted: oklch(0.953 0.010 305.4);
+  --muted-foreground: oklch(0.508 0.037 299.0);
+  --accent: oklch(0.953 0.010 305.4);
+  --accent-foreground: oklch(0.212 0.028 297.1);
+  --destructive: oklch(0.591 0.195 21.0);
+  --border: oklch(0.908 0.017 304.8);
+  --input: oklch(0.908 0.017 304.8);
+  --ring: oklch(0.772 0.164 71.0);
+  /* Pistes audio (en plus de shadcn) */
+  --voice: oklch(0.772 0.164 71.0);
+  --music: oklch(0.623 0.109 183.6);
+}
+.dark {
+  --background: oklch(0.187 0.022 296.7);
+  --foreground: oklch(0.955 0.013 306.0);
+  --card: oklch(0.221 0.027 297.2);
+  --card-foreground: oklch(0.955 0.013 306.0);
+  --popover: oklch(0.221 0.027 297.2);
+  --popover-foreground: oklch(0.955 0.013 306.0);
+  --primary: oklch(0.813 0.165 75.0);
+  --primary-foreground: oklch(0.191 0.028 84.5);
+  --secondary: oklch(0.262 0.034 296.8);
+  --secondary-foreground: oklch(0.955 0.013 306.0);
+  --muted: oklch(0.262 0.034 296.8);
+  --muted-foreground: oklch(0.710 0.035 298.8);
+  --accent: oklch(0.262 0.034 296.8);
+  --accent-foreground: oklch(0.955 0.013 306.0);
+  --destructive: oklch(0.657 0.193 19.6);
+  --border: oklch(0.298 0.042 295.7);
+  --input: oklch(0.298 0.042 295.7);
+  --ring: oklch(0.813 0.165 75.0);
+  --voice: oklch(0.813 0.165 75.0);
+  --music: oklch(0.794 0.126 184.7);
+}
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  /* Pistes audio (en plus de shadcn) */
+  --color-voice: var(--voice);
+  --color-music: var(--music);
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-display: "Fredoka", "Nunito", sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+}

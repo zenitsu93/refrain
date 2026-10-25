@@ -1,0 +1,7 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+# Séparation voix / musique. Installe aussi PyTorch (prévoir ~2 Go).
+# Pour une machine sans GPU, installer d'abord torch CPU :
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+demucs>=4.0.1
