@@ -1,11 +1,10 @@
-name: Front web
+name: Déploiement web
 
-# Build du front à chaque PR, build + déploiement sur o2switch à chaque push sur main.
+# Déploiement du front sur o2switch à chaque push sur main.
+# Le build des PR est fait par ci.yml.
 on:
   push:
     branches: [main]
-    paths: ["web/**", ".github/workflows/deploy-web.yml"]
-  pull_request:
     paths: ["web/**", ".github/workflows/deploy-web.yml"]
   workflow_dispatch:
 
@@ -39,7 +38,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: production
