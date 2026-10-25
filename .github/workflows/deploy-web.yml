@@ -58,10 +58,29 @@ jobs:
           FTP_PASSWORD: ${{ secrets.O2SWITCH_FTP_PASSWORD }}
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          # Le FTP d'o2switch n'envoie que son propre certificat, sans les intermédiaires
+          # Let's Encrypt. On suit l'AIA jusqu'à une racine du système et on vérifie
+          # la chaîne avant de lui faire confiance.
+          cd "$RUNNER_TEMP"
+          openssl s_client -connect "$FTP_HOST:21" -starttls ftp -servername "$FTP_HOST" </dev/null 2>/dev/null \
+            | openssl x509 -out server.pem
+          : > chain.pem
+          cur=server.pem
+          for i in 1 2 3; do
+            openssl verify -CAfile /etc/ssl/certs/ca-certificates.crt -untrusted chain.pem server.pem >/dev/null 2>&1 && break
+            aia=$(openssl x509 -in "$cur" -noout -ext authorityInfoAccess | sed -n 's/.*CA Issuers - URI://p')
+            curl -fsS "$aia" | openssl x509 -inform DER -out "issuer$i.pem"
+            cat "issuer$i.pem" >> chain.pem
+            cur="issuer$i.pem"
+          done
+          openssl verify -CAfile /etc/ssl/certs/ca-certificates.crt -untrusted chain.pem server.pem
+          cat /etc/ssl/certs/ca-certificates.crt chain.pem > ca.pem
+          cd "$GITHUB_WORKSPACE"
           lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" <<LFTP
           set ftp:ssl-force true
           set ftp:ssl-protect-data true
           set ssl:verify-certificate true
+          set ssl:ca-file $RUNNER_TEMP/ca.pem
           set net:max-retries 3
           mirror --reverse --delete --verbose --parallel=4 --exclude-glob .well-known/ dist/ /
           bye
