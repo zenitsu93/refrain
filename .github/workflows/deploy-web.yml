@@ -1,0 +1,69 @@
+name: Front web
+
+# Build du front à chaque PR, build + déploiement sur o2switch à chaque push sur main.
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/deploy-web.yml"]
+  pull_request:
+    paths: ["web/**", ".github/workflows/deploy-web.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          # URL publique du serveur Demucs (variable de dépôt, sans slash final).
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+          retention-days: 7
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.PUBLIC_URL }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+      # FTPS plutôt que SSH : o2switch n'ouvre le SSH qu'aux IP autorisées,
+      # et celles des runners GitHub changent à chaque exécution.
+      # Le compte FTP est dédié et a pour racine le dossier du sous-domaine.
+      - name: Envoi sur o2switch (FTPS)
+        env:
+          FTP_HOST: ${{ secrets.O2SWITCH_FTP_HOST }}
+          FTP_USER: ${{ secrets.O2SWITCH_FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.O2SWITCH_FTP_PASSWORD }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" <<LFTP
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate true
+          set net:max-retries 3
+          mirror --reverse --delete --verbose --parallel=4 --exclude-glob .well-known/ dist/ /
+          bye
+          LFTP
